@@ -10,10 +10,11 @@ class NoteDialog extends StatefulWidget {
   const NoteDialog({Key? key, this.note, required this.onSave}) : super(key: key);
 
   @override
-  _NoteDialogState createState() => _NoteDialogState();
+  State<NoteDialog> createState() => NoteDialogState();
 }
 
-class _NoteDialogState extends State<NoteDialog> {
+
+class NoteDialogState extends State<NoteDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -105,6 +106,9 @@ class _NoteDialogState extends State<NoteDialog> {
       ),
       actions: [
         TextButton(
+          style:  TextButton.styleFrom(
+            foregroundColor: Colors.blue,
+          ),
           child: const Text('Save'),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
