@@ -1,27 +1,38 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import '../models/note.dart';
+import 'dart:io';
+import '../models/notes_manager.dart';
 import '../utils/note_dialouge.dart';
 
 class NotesListPage extends StatefulWidget {
-  final List<Note> notes;
-
-  const NotesListPage({Key? key, required this.notes}) : super(key: key);
 
   @override
   State<NotesListPage> createState() => NotesListPageState();
 }
 
 class NotesListPageState extends State<NotesListPage> {
+  List<Note> notes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotes();
+  }
+
+  void _loadNotes() async {
+    final loadedNotes = await NoteManager.getAllNotes();
+    setState(() {
+      notes = loadedNotes;
+    });
+  }
+
   void _addNote() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return NoteDialog(
-          onSave: (note) {
-            setState(() {
-              widget.notes.add(note);
-            });
+          onSave: (note) async {
+            await NoteManager.saveNote(note);
+          _loadNotes();
           },
         );
       },
@@ -29,30 +40,40 @@ class NotesListPageState extends State<NotesListPage> {
   }
 
   void _editNote(int index) {
-    final note = widget.notes[index];
+    final note = notes[index];
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return NoteDialog(
           note: note,
-          onSave: (updatedNote) {
-            setState(() {
-              widget.notes[index] = updatedNote;
-            });
+          onSave: (updatedNote) async {
+            updatedNote.id = note.id;
+            await NoteManager.updateNote(updatedNote);
+            _loadNotes();
           },
         );
       },
     );
   }
 
-  void _deleteNote(int index) {
-    setState(() {
-      widget.notes.removeAt(index);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Note deleted')),
-    );
+void _deleteNote(int index) async {
+  final id = notes[index].id;
+  try {
+    await NoteManager.deleteNote(id);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Note deleted')),
+      );
+      _loadNotes();
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Something went wrong')),
+      );
+    }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -80,9 +101,9 @@ class NotesListPageState extends State<NotesListPage> {
             // List Section
             Expanded(
               child: ListView.builder(
-                itemCount: widget.notes.length,
+                itemCount: notes.length,
                 itemBuilder: (context, index) {
-                  final note = widget.notes[index];
+                  final note = notes[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
@@ -95,7 +116,7 @@ class NotesListPageState extends State<NotesListPage> {
                             )
                           : null,
                       title: Text(note.title),
-                      subtitle: Text(note.description),
+                      subtitle: Text(note.content),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
