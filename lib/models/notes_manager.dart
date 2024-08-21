@@ -1,48 +1,27 @@
-import 'dart:io';
+// note_manager.dart
 import 'dart:convert';
+import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
-
-class Note {
-  String id;
-  String title;
-  String content;
-  String? imagePath;
-
-  Note({required this.id, required this.title, required this.content, this.imagePath});
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'content': content,
-    'imagePath': imagePath,
-  };
-
-  factory Note.fromJson(Map<String, dynamic> json) => Note(
-    id: json['id'],
-    title: json['title'],
-    content: json['content'],
-    imagePath: json['imagePath']
-  );
-}
+import 'note.dart';
 
 class NoteManager {
-  static Future<String> get _directoryPath async {
+  Future<String> get _directoryPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
   }
 
-  static Future<File> _getFile(String fileName) async {
+  Future<File> _getFile(String fileName) async {
     final path = await _directoryPath;
     return File('$path/$fileName');
   }
 
-  static Future<void> saveNote(Note note) async {
+  Future<void> saveNote(Note note) async {
     final file = await _getFile('${note.id}.json');
     await file.writeAsString(json.encode(note.toJson()));
   }
 
-  static Future<Note?> getNote(String id) async {
+  Future<Note?> getNote(String id) async {
     try {
       final file = await _getFile('$id.json');
       final contents = await file.readAsString();
@@ -52,7 +31,7 @@ class NoteManager {
     }
   }
 
-  static Future<List<Note>> getAllNotes() async {
+  Future<List<Note>> getAllNotes() async {
     final path = await _directoryPath;
     final dir = Directory(path);
     List<Note> notes = [];
@@ -67,14 +46,14 @@ class NoteManager {
     return notes;
   }
 
-  static Future<void> deleteNote(String id) async {
+  Future<void> deleteNote(String id) async {
     final file = await _getFile('$id.json');
     if (await file.exists()) {
       await file.delete();
     }
   }
 
-  static Future<String?> saveImage(XFile image) async {
+  Future<String> saveImage(XFile image) async {
     final path = await _directoryPath;
     final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
     final filePath = '$path/$fileName';
@@ -82,7 +61,7 @@ class NoteManager {
     return filePath;
   }
 
-  static Future<void> updateNote(Note note) async {
+  Future<void> updateNote(Note note) async {
     final file = await _getFile('${note.id}.json');
     await file.writeAsString(json.encode(note.toJson()));
   }

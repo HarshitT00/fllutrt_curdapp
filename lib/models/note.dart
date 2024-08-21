@@ -1,15 +1,16 @@
-class Note {
-  final String title;
-  final String description;
-  final String? imagePath;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  Note({required this.title, required this.description, this.imagePath});
+part 'note.freezed.dart';
+part 'note.g.dart'; // For JSON serialization
 
-  Note copyWith({String? title, String? description, String? imagePath}) {
-    return Note(
-      title: title ?? this.title,
-      description: description ?? this.description,
-      imagePath: imagePath ?? this.imagePath,
-    );
-  }
+@freezed
+class Note with _$Note {
+  const factory Note({
+    required String id,
+    required String title,
+    required String content,
+    String? imagePath,
+  }) = _Note;
+
+  factory Note.fromJson(Map<String, dynamic> json) => _$NoteFromJson(json);
 }

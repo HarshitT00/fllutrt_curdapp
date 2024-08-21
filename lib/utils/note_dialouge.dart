@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/notes_manager.dart';
+import '../models/note.dart';
 
 class NoteDialog extends StatefulWidget {
   final Note? note;
@@ -116,9 +116,10 @@ class NoteDialogState extends State<NoteDialog> {
           child: const Text('Save'),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+               final id = widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
               widget.onSave(
                 Note(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  id: id,
                   title: _titleController.text,
                   content: _descriptionController.text,
                   imagePath: _image?.path,
